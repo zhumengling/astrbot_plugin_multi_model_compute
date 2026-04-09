@@ -1,0 +1,1 @@
+# astrbot_plugin_multi_model_compute package

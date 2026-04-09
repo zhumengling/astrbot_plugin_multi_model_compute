@@ -1,0 +1,212 @@
+{
+  "model_1": {
+    "type": "string",
+    "description": "模型 1",
+    "hint": "选择一个已在 AstrBot 平台中配置好的对话模型。留空则不参与。",
+    "_special": "select_provider",
+    "default": ""
+  },
+  "model_1_tags": {
+    "type": "string",
+    "description": "模型 1 能力标签",
+    "hint": "用逗号分隔标签，如：coding,debug,reasoning,analysis,fast,creative,review,stable,cheap,vision。调用时插件会基于任务特征与标签自动决定优先调用哪些模型。",
+    "default": ""
+  },
+  "model_2": {
+    "type": "string",
+    "description": "模型 2",
+    "hint": "选择一个已在 AstrBot 平台中配置好的对话模型。留空则不参与。",
+    "_special": "select_provider",
+    "default": ""
+  },
+  "model_2_tags": {
+    "type": "string",
+    "description": "模型 2 能力标签",
+    "hint": "用逗号分隔标签，如：coding,debug,reasoning,analysis,fast,creative,review,stable,cheap,vision。调用时插件会基于任务特征与标签自动决定优先调用哪些模型。",
+    "default": ""
+  },
+  "model_3": {
+    "type": "string",
+    "description": "模型 3",
+    "hint": "选择一个已在 AstrBot 平台中配置好的对话模型。留空则不参与。",
+    "_special": "select_provider",
+    "default": ""
+  },
+  "model_3_tags": {
+    "type": "string",
+    "description": "模型 3 能力标签",
+    "hint": "用逗号分隔标签，如：coding,debug,reasoning,analysis,fast,creative,review,stable,cheap,vision。调用时插件会基于任务特征与标签自动决定优先调用哪些模型。",
+    "default": ""
+  },
+  "model_4": {
+    "type": "string",
+    "description": "模型 4",
+    "hint": "选择一个已在 AstrBot 平台中配置好的对话模型。留空则不参与。",
+    "_special": "select_provider",
+    "default": ""
+  },
+  "model_4_tags": {
+    "type": "string",
+    "description": "模型 4 能力标签",
+    "hint": "用逗号分隔标签，如：coding,debug,reasoning,analysis,fast,creative,review,stable,cheap,vision。调用时插件会基于任务特征与标签自动决定优先调用哪些模型。",
+    "default": ""
+  },
+  "model_5": {
+    "type": "string",
+    "description": "模型 5",
+    "hint": "选择一个已在 AstrBot 平台中配置好的对话模型。留空则不参与。",
+    "_special": "select_provider",
+    "default": ""
+  },
+  "model_5_tags": {
+    "type": "string",
+    "description": "模型 5 能力标签",
+    "hint": "用逗号分隔标签，如：coding,debug,reasoning,analysis,fast,creative,review,stable,cheap,vision。调用时插件会基于任务特征与标签自动决定优先调用哪些模型。",
+    "default": ""
+  },
+  "default_mode": {
+    "type": "string",
+    "description": "默认调度策略",
+    "hint": "平衡：兼顾质量与速度；快速：优先更快返回结果；共识：强调多模型交叉验证与一致结论；创意：更偏发散思路与多样输出。",
+    "default": "balanced",
+    "_special": "select",
+    "options": [
+      "balanced",
+      "fast",
+      "consensus",
+      "creative"
+    ],
+    "labels": [
+      "平衡",
+      "快速",
+      "共识",
+      "创意"
+    ]
+  },
+  "return_merged_answer": {
+    "type": "bool",
+    "description": "是否返回 merged_answer",
+    "default": true
+  },
+  "return_candidates": {
+    "type": "bool",
+    "description": "是否返回 candidates",
+    "default": true
+  },
+  "cache_ttl_sec": {
+    "type": "int",
+    "description": "结果缓存有效期（秒）",
+    "hint": "相同 query+mode+backend 的调用在此时间内直接返回缓存结果，避免重复调用。设为 0 可禁用缓存。",
+    "default": 300
+  },
+  "builtin_models": {
+    "type": "list",
+    "description": "回退模型池（mock）",
+    "hint": "仅当 model_1 ~ model_5 都未选择时使用。",
+    "items": {
+      "type": "object"
+    },
+    "default": [
+      {
+        "id": "mock_reasoner",
+        "provider": "mock",
+        "strengths": [
+          "推理",
+          "分析",
+          "多步骤回答"
+        ],
+        "best_for": [
+          "analysis",
+          "planning",
+          "comparison"
+        ],
+        "speed": "medium",
+        "cost": "low"
+      },
+      {
+        "id": "mock_coder",
+        "provider": "mock",
+        "strengths": [
+          "代码",
+          "技术实现",
+          "调试思路"
+        ],
+        "best_for": [
+          "code",
+          "debug",
+          "architecture"
+        ],
+        "speed": "medium",
+        "cost": "medium"
+      },
+      {
+        "id": "mock_summarizer",
+        "provider": "mock",
+        "strengths": [
+          "总结",
+          "提炼",
+          "归纳"
+        ],
+        "best_for": [
+          "summary",
+          "rewrite",
+          "merge"
+        ],
+        "speed": "fast",
+        "cost": "low"
+      },
+      {
+        "id": "mock_critic",
+        "provider": "mock",
+        "strengths": [
+          "反思",
+          "风险识别",
+          "一致性检查"
+        ],
+        "best_for": [
+          "review",
+          "risk",
+          "verification"
+        ],
+        "speed": "slow",
+        "cost": "low"
+      }
+    ]
+  },
+  "real_call_timeout_sec": {
+    "type": "float",
+    "description": "单模型请求超时秒数",
+    "hint": "每个模型独立计时：超过此秒数未响应则直接断开该模型，其他并行模型不受影响。默认 60s。",
+    "default": 60
+  },
+  "webui_enabled": {
+    "type": "bool",
+    "description": "是否启用内置监控 WebUI",
+    "default": true
+  },
+  "webui_host": {
+    "type": "string",
+    "description": "WebUI 监听地址",
+    "default": "0.0.0.0"
+  },
+  "webui_port": {
+    "type": "int",
+    "description": "WebUI 监听端口",
+    "default": 8099
+  },
+  "auto_raise_tool_call_timeout_on_startup": {
+    "type": "bool",
+    "description": "是否在插件启动时自动提升全局 tool_call_timeout",
+    "hint": "默认 false（安全默认）。仅在明确允许插件启动时自动修改全局配置时设为 true。",
+    "default": false
+  },
+  "timeout_manage_admin_ids": {
+    "type": "list",
+    "description": "允许修改 tool_call_timeout 的管理员用户ID白名单",
+    "hint": "当事件上下文无法明确识别管理员身份时，会使用该白名单做二次校验。支持字符串列表。为空时仅允许明确管理员上下文修改。",
+    "items": {
+      "type": "string"
+    },
+    "default": []
+  }
+}

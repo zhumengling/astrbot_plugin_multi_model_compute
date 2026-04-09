@@ -1,0 +1,4 @@
+# 插件运行所需的额外依赖
+# astrbot 相关模块由 AstrBot 宿主提供，无需在此重复声明
+fastapi
+uvicorn

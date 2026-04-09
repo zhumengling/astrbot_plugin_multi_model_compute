@@ -1,6 +1,6 @@
-name: helloworld # 插件唯一识别名，以 astrbot_plugin_ 前缀开头
-display_name: helloworld # 用于展示的名字，可以是方便人类阅读的名字（需要版本 >= v4.5.0，低版本不会报错，请放心填写）
-desc: AstrBot 插件示例。 # 插件简短描述
-version: v1.3.0 # 插件版本号。格式：v1.1.1 或者 v1.1
-author: Soulter # 作者
-repo: https://github.com/Soulter/helloworld # 插件的仓库地址
+name: astrbot_plugin_multi_model_compute
+display_name: 多模型深度思考与辩论
+desc: 面向 AstrBot 的多模型协同分析插件，支持 /深度思考 与 /辩论，提供多模型并行调用、动态路由、结构化汇总、共识与分歧分析、可视化报告及调试能力。
+version: v0.13.1
+author: zhumengling
+repo: https://github.com/zhumengling/astrbot_plugin_multi_model_compute

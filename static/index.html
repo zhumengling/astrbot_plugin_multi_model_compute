@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Model Command Deck</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0b0f14; --panel:#11161d; --panel-2:#161c24; --line:rgba(255,255,255,.07);
+      --text:#e6edf3; --muted:#97a3b3; --accent:#3ecfcd; --accent-2:#7ee787;
+      --success:#7ee787; --warning:#f5b83d; --danger:#f05d5e; --radius:18px;
+      --shadow:0 18px 48px rgba(0,0,0,.28); --font:'IBM Plex Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+    }
+    *{box-sizing:border-box;margin:0;padding:0} body{font-family:var(--font);background:radial-gradient(circle at 0 0, rgba(62,207,205,.08), transparent 22%),radial-gradient(circle at 100% 0, rgba(126,231,135,.05), transparent 18%),var(--bg);color:var(--text);min-height:100vh}
+    .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}.sidebar{background:rgba(12,16,22,.88);border-right:1px solid var(--line);padding:20px 14px}.brand{padding:8px 12px 18px;border-bottom:1px solid var(--line);margin-bottom:14px}.brand h1{font-size:24px;font-weight:700;background:linear-gradient(135deg,#d7fffe 0%,#78e7c1 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.brand p{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.6}
+    .nav-item{padding:14px 16px;border-radius:14px;cursor:pointer;color:var(--muted);display:flex;gap:10px;align-items:center;border:1px solid transparent;margin-bottom:8px}.nav-item.active{background:linear-gradient(90deg,rgba(62,207,205,.16),rgba(62,207,205,.05));border-color:rgba(62,207,205,.28);color:#fff}.nav-item:hover{background:#1a222b;color:#fff}
+    .main{display:flex;flex-direction:column;min-width:0}.topbar{display:flex;justify-content:space-between;align-items:center;padding:18px 26px;border-bottom:1px solid var(--line);background:rgba(11,15,20,.82);position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}
+    .title{font-size:28px;font-weight:700;letter-spacing:-.04em}.subtitle{margin-top:6px;color:var(--muted);font-size:14px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.pill,.btn,.input,.select,.textarea{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px}.pill{padding:8px 12px;font-size:13px}.btn{padding:10px 14px;cursor:pointer}.btn.primary{background:rgba(62,207,205,.12);border-color:rgba(62,207,205,.3)}.btn:hover{background:#1a222b}.content{padding:24px;display:flex;flex-direction:column;gap:18px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-5{grid-column:span 5}.col-6{grid-column:span 6}.col-7{grid-column:span 7}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}.card-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}.hero{padding:26px;background:linear-gradient(135deg,rgba(62,207,205,.12),rgba(126,231,135,.04),rgba(255,255,255,.02));border-color:rgba(62,207,205,.18)}
+    .hero-title{font-size:30px;font-weight:700;letter-spacing:-.04em}.hero-sub{margin-top:10px;color:var(--muted);line-height:1.7;max-width:760px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}.metric{padding:14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}.metric-label{font-size:12px;color:var(--muted)}.metric-value{font-size:28px;font-weight:700;margin-top:6px}.mono{font-family:var(--mono)}
+    table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px;vertical-align:top}th{font-size:12px;color:var(--muted);text-transform:uppercase}.tag{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);margin-right:6px;margin-bottom:6px}.success{color:var(--success)}.warning{color:var(--warning)}.danger{color:var(--danger)}
+    .filter-bar{display:flex;gap:10px;flex-wrap:wrap}.input,.select,.textarea{padding:10px 12px;width:100%}.textarea{min-height:88px;resize:vertical}.run-list{display:flex;flex-direction:column;gap:14px}.run-card{padding:16px;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);cursor:pointer}.run-card.active{border-color:rgba(62,207,205,.3);background:rgba(62,207,205,.06)}.run-top{display:flex;justify-content:space-between;gap:8px}.run-sub{margin-top:6px;color:var(--muted);font-size:13px}
+    .task-layout{display:grid;grid-template-columns:280px 1fr 320px;gap:18px}.pane{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-height:580px}.pane-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}.kv{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)}.kv:last-child{border-bottom:none}.reply-card{border:1px solid rgba(255,255,255,.05);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02);margin-bottom:12px}.reply-head{display:flex;justify-content:space-between;gap:8px;padding:12px 14px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.04)}.reply-body{padding:14px;white-space:pre-wrap;word-break:break-word;color:#c8d1da;line-height:1.65;font-size:13px;max-height:220px;overflow:auto}.consensus-box{padding:14px;border-radius:14px;background:rgba(62,207,205,.08);border:1px solid rgba(62,207,205,.18);margin-bottom:12px}.diff-box{padding:14px;border-radius:14px;background:rgba(245,184,61,.08);border:1px solid rgba(245,184,61,.18);margin-bottom:12px}.error-box{padding:12px;border-radius:12px;background:rgba(240,93,94,.08);border:1px solid rgba(240,93,94,.16);color:var(--danger);font-size:13px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:flex;flex-direction:column;gap:8px}.label{font-size:12px;color:var(--muted)}.slot-card{padding:14px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05)}.slot-grid{display:grid;grid-template-columns:1fr 140px;gap:10px;align-items:start}.help{color:var(--muted);font-size:12px;line-height:1.6}.empty{padding:28px;color:var(--muted);text-align:center;border:1px dashed rgba(255,255,255,.08);border-radius:14px}.notice{padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03);font-size:13px}.notice.warn{border-color:rgba(245,184,61,.2);background:rgba(245,184,61,.08)}.notice.ok{border-color:rgba(126,231,135,.2);background:rgba(126,231,135,.08)}.notice.err{border-color:rgba(240,93,94,.2);background:rgba(240,93,94,.08)}.diff-list{display:flex;flex-direction:column;gap:10px}.diff-item{padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    @media (max-width: 1280px){.metrics{grid-template-columns:repeat(2,1fr)}.task-layout{grid-template-columns:1fr}.col-3,.col-4,.col-5,.col-6,.col-7,.col-8{grid-column:span 12}}
+    @media (max-width: 900px){.app{grid-template-columns:1fr}.sidebar{border-right:none;border-bottom:1px solid var(--line)}.grid>*{grid-column:span 12}.form-grid,.slot-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>◧ Multi-Model Command Deck</h1>
+        <p>多模型编排、任务分析、配置管理一体化控制台。</p>
+      </div>
+      <div class="nav-item" :class="{active:activeTab==='dashboard'}" @click="activeTab='dashboard'">📊 <span>工作台</span></div>
+      <div class="nav-item" :class="{active:activeTab==='calls'}" @click="activeTab='calls'">🧭 <span>任务详情</span></div>
+      <div class="nav-item" :class="{active:activeTab==='config'}" @click="activeTab='config'">⚙️ <span>配置中心</span></div>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div class="title">{{ page.title }}</div>
+          <div class="subtitle">{{ page.subtitle }}</div>
+        </div>
+        <div class="row">
+          <div class="pill">{{ isConnected ? '● Server Live' : '○ Disconnected' }}</div>
+          <div class="pill">运行 {{ recentRuns.length }}</div>
+          <button class="btn primary" @click="fetchData">刷新</button>
+          <button v-if="activeTab==='config'" class="btn" @click="resetConfig" :disabled="!isDirty">重置</button><button v-if="activeTab==='config'" class="btn primary" @click="saveConfig" :disabled="!canSave">保存配置</button>
+        </div>
+      </div>
+      <div class="content">
+        <section v-if="activeTab==='dashboard'">
+          <div class="card hero">
+            <div class="card-title" style="color:var(--accent)">COMMAND DECK</div>
+            <div class="hero-title">多模型编排指挥台</div>
+            <div class="hero-sub">把模型状态、运行趋势、失败风险、配置策略和最近任务结果集中展示，方便你快速判断要不要继续跑、该调什么、哪个模型更稳。</div>
+            <div class="metrics">
+              <div class="metric"><div class="metric-label">在线槽位</div><div class="metric-value">{{ enabledCount }}</div></div>
+              <div class="metric"><div class="metric-label">成功率</div><div class="metric-value">{{ overallSuccessRate }}%</div></div>
+              <div class="metric"><div class="metric-label">平均延迟</div><div class="metric-value mono">{{ avgLatency }}ms</div></div>
+              <div class="metric"><div class="metric-label">默认模式</div><div class="metric-value">{{ modeLabel(config.default_mode) }}</div></div>
+            </div>
+          </div>
+          <div class="grid" style="margin-top:18px;">
+            <div class="card col-8"><div class="card-title">运行趋势</div><div style="height:260px"><canvas id="trendChart"></canvas></div></div>
+            <div class="card col-4">
+              <div class="card-title">关键限制</div>
+              <div class="kv"><span>全局超时</span><strong class="mono">{{ config.real_call_timeout_sec || 0 }}s</strong></div>
+              <div class="kv"><span>缓存 TTL</span><strong class="mono">{{ config.cache_ttl_sec || 0 }}s</strong></div>
+              <div class="kv"><span>空响应拦截</span><strong class="danger">{{ health.empty_model_output_error_count || 0 }}</strong></div>
+                          </div>
+            <div class="card col-7">
+              <div class="card-title">Provider 表现矩阵</div>
+              <div v-if="providers.length===0" class="empty">暂无 provider 统计</div>
+              <table v-else><thead><tr><th>Provider</th><th>调用</th><th>成功率</th><th>平均延迟</th><th>状态</th></tr></thead><tbody>
+                <tr v-for="p in providers" :key="p.provider_id"><td>{{ p.provider_id }}</td><td>{{ p.runs }}</td><td>{{ p.success_rate_inferred }}%</td><td class="mono">{{ p.avg_elapsed_ms }} ms</td><td><span :class="providerClass(p)">{{ providerText(p) }}</span></td></tr>
+              </tbody></table>
+            </div>
+            <div class="card col-5">
+              <div class="card-title">模型槽位</div>
+              <div v-if="!config.enabled_slots?.length" class="empty">暂无模型槽位</div>
+              <div v-else>
+                <div class="slot-card" v-for="slot in config.enabled_slots" :key="slot.slot" style="margin-bottom:10px;">
+                  <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div style="font-weight:600">{{ slot.provider_id || '未配置' }}</div><div class="help">{{ slot.slot }} {{ slot.tags ? '· '+slot.tags : '' }}</div></div><span class="tag">{{ slot.enabled ? 'ACTIVE' : 'EMPTY' }}</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section v-if="activeTab==='calls'">
+          <div class="card" style="margin-bottom:18px;">
+            <div class="card-title">历史筛选</div>
+            <div class="filter-bar">
+              <select class="select" style="max-width:170px" v-model="filters.status"><option value="all">全部状态</option><option value="success">成功</option><option value="partial">部分成功</option><option value="failed">失败</option></select>
+              <input class="input" style="max-width:260px" v-model="filters.provider" placeholder="筛选 provider 关键字">
+              <input class="input" style="max-width:160px" v-model.number="filters.limit" type="number" min="1" max="50" placeholder="数量">
+            </div>
+          </div>
+          <div class="task-layout">
+            <div class="pane">
+              <div class="pane-title">任务历史</div>
+              <div v-if="filteredRuns.length===0" class="empty">无匹配任务</div>
+              <div v-else class="run-list">
+                <div class="run-card" :class="{active:selectedRun && selectedRun.seq===run.seq}" v-for="run in filteredRuns" :key="run.seq" @click="selectRun(run)">
+                  <div class="run-top"><strong>任务 #{{ run.seq }}</strong><span class="tag">{{ run.total_elapsed_ms }}ms</span></div>
+                  <div class="run-sub">参与 {{ run.participants.length }} 个模型 · {{ run.replyCount }} 条输出</div>
+                  <div class="row" style="margin-top:10px"><span class="tag" v-for="p in run.participants.slice(0,3)" :key="p">{{ p }}</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="pane">
+              <div class="pane-title">多模型结果</div>
+              <div v-if="!selectedRun" class="empty">请选择左侧任务</div>
+              <template v-else>
+                <div class="reply-card" v-for="reply in selectedRun.replies" :key="reply.key">
+                  <div class="reply-head"><div><div style="font-weight:600">{{ reply.provider_id || 'Unknown Provider' }}</div><div class="help">{{ reply.observed_type || 'log' }}</div></div><span class="tag">{{ reply.error ? 'Error' : 'Output' }}</span></div>
+                  <div class="reply-body">{{ reply.text_preview || '无文本预览' }}</div>
+                  <div v-if="reply.error" class="error-box">{{ reply.error }}</div>
+                </div>
+              </template>
+            </div>
+            <div class="pane">
+              <div class="pane-title">共识 / 分歧</div>
+              <div v-if="!selectedRun" class="empty">请选择任务后查看分析</div>
+              <template v-else>
+                <div class="consensus-box">
+                  <div style="font-weight:700;margin-bottom:6px">共识摘要</div>
+                  <div class="help">{{ consensusSummary(selectedRun) }}</div>
+                </div>
+                <div class="diff-box">
+                  <div style="font-weight:700;margin-bottom:6px">分歧提示</div>
+                  <div class="help">{{ divergenceSummary(selectedRun) }}</div>
+                </div>
+                <div class="card-title" style="margin-top:12px">执行摘要</div>
+                <div class="kv"><span>总耗时</span><strong class="mono">{{ selectedRun.total_elapsed_ms }} ms</strong></div>
+                <div class="kv"><span>参与模型</span><strong>{{ selectedRun.participants.length }}</strong></div>
+                <div class="kv"><span>成功输出</span><strong>{{ selectedRun.replyCount - selectedRun.errorCount }}</strong></div>
+                <div class="kv"><span>错误数</span><strong class="danger">{{ selectedRun.errorCount }}</strong></div>
+              </template>
+            </div>
+          </div>
+        </section>
+
+        <section v-if="activeTab==='config'">
+          <div class="grid">
+            <div class="card col-8">
+              <div class="card-title">运行配置</div>
+              <div class="form-grid">
+                <div class="field"><label class="label">默认模式</label><select class="select" v-model="editableConfig.default_mode"><option value="balanced">平衡</option><option value="fast">快速</option><option value="consensus">共识</option><option value="creative">创意</option></select></div>
+                <div class="field"><label class="label">全局超时（秒）</label><input class="input" type="number" min="1" v-model.number="editableConfig.real_call_timeout_sec"></div>
+                <div class="field"><label class="label">缓存 TTL（秒）</label><input class="input" type="number" min="0" v-model.number="editableConfig.cache_ttl_sec"></div>
+                <div class="field"><label class="label">返回聚合答案</label><select class="select" v-model="editableConfig.return_merged_answer"><option :value="true">开启</option><option :value="false">关闭</option></select></div>
+                <div class="field"><label class="label">返回候选结果</label><select class="select" v-model="editableConfig.return_candidates"><option :value="true">开启</option><option :value="false">关闭</option></select></div>
+              </div>
+              <div class="toolbar">
+                <div class="notice warn" v-if="isDirty">存在未保存更改</div>
+                <div class="notice ok" v-else>当前没有未保存更改</div>
+                <div class="notice err" v-if="validationErrors.length">{{ validationErrors[0] }}</div>
+              </div>
+            </div>
+            <div class="card col-4">
+              <div class="card-title">配置状态</div>
+              <div class="kv"><span>是否可保存</span><strong>{{ canSave ? '是' : '否' }}</strong></div>
+              <div class="kv"><span>未保存字段数</span><strong>{{ diffItems.length }}</strong></div>
+              <div class="kv"><span>启用槽位数</span><strong>{{ draftEnabledCount }}</strong></div>
+              <div class="kv"><span>当前模式</span><strong>{{ modeLabel(editableConfig.default_mode) }}</strong></div>
+              <div v-if="saveState" class="notice" :class="saveState.ok ? 'ok' : 'err'" style="margin-top:14px">{{ saveState.message }}</div>
+              <div class="help" style="margin-top:14px">保存会直接写回插件配置 JSON。若主进程已持久加载，个别行为可能需要后续调用后才完全体现。</div>
+            </div>
+            <div class="card col-7">
+              <div class="card-title">模型启停与槽位配置</div>
+              <div class="grid" style="gap:14px">
+                <div class="slot-card col-12" v-for="i in [1,2,3,4,5]" :key="i">
+                  <div class="slot-grid">
+                    <div class="field"><label class="label">model_{{ i }} provider_id</label><input class="input" v-model="editableConfig['model_' + i]" placeholder="如 nvidia/qwen/qwen3.5-122b-a10b"></div>
+                    <div class="field"><label class="label">状态</label><select class="select" :value="editableConfig['model_' + i] ? 'enabled' : 'disabled'" @change="toggleSlot(i, $event.target.value)"><option value="enabled">启用</option><option value="disabled">禁用</option></select></div>
+                  </div>
+                  <div class="field" style="margin-top:10px"><label class="label">model_{{ i }} tags</label><input class="input" v-model="editableConfig['model_' + i + '_tags']" placeholder="analysis, code, fast"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card col-5">
+              <div class="card-title">变更预览</div>
+              <div v-if="!diffItems.length" class="empty">当前没有变更</div>
+              <div v-else class="diff-list">
+                <div class="diff-item" v-for="item in diffItems" :key="item.key">
+                  <div style="font-weight:600">{{ item.key }}</div>
+                  <div class="help" style="margin-top:6px">旧值：{{ item.before }} → 新值：{{ item.after }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+<script>
+const { createApp, ref, computed, onMounted, onUnmounted, nextTick, watch } = Vue;
+createApp({
+  setup(){
+    const activeTab = ref('dashboard');
+    const isConnected = ref(false);
+    const config = ref({ enabled_slots: [] });
+    const editableConfig = ref({});
+    const plugin = ref({});
+    const health = ref({});
+    const providers = ref([]);
+    const recentRuns = ref([]);
+    const trend = ref([]);
+    const selectedRun = ref(null);
+    const saveState = ref(null);
+    const originalConfig = ref({});
+    const filters = ref({ status:'all', provider:'', limit:20 });
+    let chartInstance = null, eventSource = null;
+
+    const modeLabelMap = { balanced:'平衡', fast:'快速', consensus:'共识', creative:'创意', debate:'辩论', auto:'自动' };
+    const modeLabel = (v) => modeLabelMap[String(v || '')] || (v || 'N/A');
+
+    const page = computed(() => ({
+      dashboard:{title:'工作台',subtitle:'系统总览、运行趋势与模型状态。'},
+      calls:{title:'任务详情',subtitle:'三栏结构查看历史、结果与共识/分歧。'},
+      config:{title:'配置中心',subtitle:'直接编辑超时、返回策略、模型槽位与启停。'}
+    }[activeTab.value]));
+
+    const enabledCount = computed(() => (config.value.enabled_slots || []).filter(x => x.enabled).length);
+    const draftEnabledCount = computed(() => [1,2,3,4,5].filter(i => String(editableConfig.value['model_' + i] || '').trim()).length);
+    const diffItems = computed(() => { const keys = new Set([...Object.keys(originalConfig.value || {}), ...Object.keys(editableConfig.value || {})]); return Array.from(keys).filter(k => JSON.stringify((originalConfig.value||{})[k] ?? '') !== JSON.stringify((editableConfig.value||{})[k] ?? '')).map(k => ({ key:k, before: String((originalConfig.value||{})[k] ?? ''), after: String((editableConfig.value||{})[k] ?? '') })); });
+    const isDirty = computed(() => diffItems.value.length > 0);
+    const validationErrors = computed(() => { const errs = []; const mode = String(editableConfig.value.default_mode || ''); if (mode && !['fast','balanced','consensus','creative'].includes(mode)) errs.push('默认模式不合法'); const timeout = Number(editableConfig.value.real_call_timeout_sec || 0); if (!(timeout > 0)) errs.push('全局超时必须大于 0'); const ttl = Number(editableConfig.value.cache_ttl_sec || 0); if (ttl < 0) errs.push('缓存 TTL 不能小于 0'); for (let i=1;i<=5;i++){ const v = String(editableConfig.value['model_' + i] || '').trim(); if (v && v.includes(' ')) errs.push('provider_id 不能包含空格'); } return errs; });
+    const canSave = computed(() => isDirty.value && validationErrors.value.length === 0);
+    const avgLatency = computed(() => { const vals = providers.value.map(p => Number(p.avg_elapsed_ms||0)).filter(Boolean); return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0; });
+    const overallSuccessRate = computed(() => { const vals = providers.value.map(p => Number(p.success_rate_inferred||0)); return vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0; });
+
+    const groupedReplies = computed(() => (recentRuns.value || []).map(r => {
+      const replies = (r.provider_rows || []).map((p, idx) => ({
+        key:`${r.seq}-${p.provider_id || 'unknown'}-${idx}`,
+        provider_id:p.provider_id,
+        text_preview:String(p.text_preview || '').trim(),
+        error:p.error,
+        observed_type:p.observed_type || r.reply_observed_type || ''
+      })).filter(x => x.provider_id || x.text_preview || x.error);
+      return { seq:r.seq, participants:(r.participants||[]).filter(Boolean), total_elapsed_ms:r.total_elapsed_ms || 0, replyCount:replies.length, errorCount:replies.filter(x => !!x.error).length, replies };
+    }));
+
+    const filteredRuns = computed(() => {
+      let arr = groupedReplies.value.slice();
+      if (filters.value.provider) {
+        const q = filters.value.provider.toLowerCase();
+        arr = arr.filter(r => r.participants.some(p => String(p).toLowerCase().includes(q)) || r.replies.some(x => String(x.provider_id || '').toLowerCase().includes(q)));
+      }
+      if (filters.value.status === 'success') arr = arr.filter(r => r.replyCount > 0 && r.errorCount === 0);
+      if (filters.value.status === 'partial') arr = arr.filter(r => r.replyCount > 0 && r.errorCount > 0 && r.errorCount < r.replyCount);
+      if (filters.value.status === 'failed') arr = arr.filter(r => r.replyCount === 0 || r.errorCount >= r.replyCount);
+      return arr.slice(0, Number(filters.value.limit || 20));
+    });
+
+    const providerText = (p) => Number(p.success_rate_inferred || 0) >= 85 ? '稳定' : Number(p.success_rate_inferred || 0) >= 60 ? '波动' : '风险';
+    const providerClass = (p) => Number(p.success_rate_inferred || 0) >= 85 ? 'success' : Number(p.success_rate_inferred || 0) >= 60 ? 'warning' : 'danger';
+    const selectRun = (run) => { selectedRun.value = run; };
+    const consensusSummary = (run) => {
+      const ok = run.replies.filter(x => !x.error && x.text_preview).length;
+      if (!ok) return '当前任务没有可用输出，共识无法形成。';
+      if (ok >= 2 && run.errorCount === 0) return '大部分模型成功返回，可优先从成功结果中提炼主结论，适合进入人工二次判断或后续聚合。';
+      return '该任务存在部分有效输出，建议优先阅读成功模型的共同高频信息，并对失败模型忽略或重试。';
+    };
+    const divergenceSummary = (run) => {
+      if (run.errorCount === 0) return '主要分歧来自不同模型的表达风格和细节展开深度，未见明显系统性错误。';
+      return `存在 ${run.errorCount} 个模型返回错误或异常，结果一致性下降，建议结合耗时、错误类型和成功输出做人工筛选。`;
+    };
+    const toggleSlot = (i, mode) => { if (mode === 'disabled') editableConfig.value['model_' + i] = ''; };
+
+    const applySummary = (data) => {
+      config.value = data.config || { enabled_slots: [] };
+      plugin.value = data.plugin || {};
+      health.value = data.health || {};
+      providers.value = data.providers || [];
+      recentRuns.value = data.recent_runs || [];
+      trend.value = data.trend || [];
+      if (!selectedRun.value && groupedReplies.value.length) selectedRun.value = groupedReplies.value[0];
+      isConnected.value = true;
+      if (activeTab.value === 'dashboard') updateChart();
+    };
+
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('/api/config');
+        const data = await res.json();
+        editableConfig.value = { ...(data.config || {}) };
+        originalConfig.value = { ...(data.config || {}) };
+      } catch (e) { console.error(e); }
+    };
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/summary?provider=all&minutes=0');
+        const data = await res.json();
+        applySummary(data);
+        await fetchConfig();
+      } catch (e) {
+        console.error(e); isConnected.value = false;
+      }
+    };
+
+    const resetConfig = () => { editableConfig.value = JSON.parse(JSON.stringify(originalConfig.value || {})); saveState.value = { ok:true, message:'已重置为最近一次加载的配置' }; };
+
+    const saveConfig = async () => {
+      saveState.value = null;
+      if (validationErrors.value.length) { saveState.value = { ok:false, message: validationErrors.value[0] }; return; }
+      if (!isDirty.value) { saveState.value = { ok:true, message:'没有变更，无需保存' }; return; }
+      try {
+        const res = await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(editableConfig.value) });
+        const data = await res.json();
+        if (data && data.ok) {
+          saveState.value = { ok:true, message:'配置已保存' };
+          originalConfig.value = JSON.parse(JSON.stringify(editableConfig.value || {}));
+          await fetchData();
+          activeTab.value = 'config';
+        } else {
+          saveState.value = { ok:false, message:'保存失败' };
+        }
+      } catch (e) {
+        saveState.value = { ok:false, message:'保存失败：' + e.message };
+      }
+    };
+
+    const setupSSE = () => {
+      if (eventSource) eventSource.close();
+      eventSource = new EventSource('/api/events?provider=all&minutes=0');
+      eventSource.onopen = () => { isConnected.value = true; };
+      eventSource.onmessage = (e) => { if (!e.data) return; try { applySummary(JSON.parse(e.data)); } catch (_) {} };
+      eventSource.onerror = () => { if (eventSource && eventSource.readyState === EventSource.CONNECTING) return; isConnected.value = false; };
+    };
+
+    const updateChart = () => {
+      if (activeTab.value !== 'dashboard') return;
+      nextTick(() => {
+        const ctx = document.getElementById('trendChart'); if (!ctx) return;
+        const labels = trend.value.map(t => '#' + t.x), data = trend.value.map(t => t.elapsed_ms);
+        Chart.defaults.color = '#97a3b3'; Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, { type:'line', data:{ labels, datasets:[{ label:'响应耗时 (ms)', data, borderColor:'#3ecfcd', backgroundColor:'rgba(62,207,205,.12)', pointBackgroundColor:'#7ee787', borderWidth:2, fill:true, tension:.35 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'rgba(11,15,20,.94)', borderColor:'rgba(255,255,255,.1)', borderWidth:1 } }, scales:{ x:{ grid:{ color:'rgba(255,255,255,.03)' } }, y:{ beginAtZero:true, grid:{ color:'rgba(255,255,255,.03)' } } } } });
+      });
+    };
+
+    watch(activeTab, (v) => { if (v === 'dashboard') setTimeout(updateChart, 50); if (v === 'config') fetchConfig(); });
+    watch(filteredRuns, (runs) => { if (!runs.length) { selectedRun.value = null; return; } if (!selectedRun.value || !runs.find(x => x.seq === selectedRun.value.seq)) selectedRun.value = runs[0]; });
+
+    onMounted(() => { fetchData(); setupSSE(); });
+    onUnmounted(() => { if (eventSource) eventSource.close(); if (chartInstance) chartInstance.destroy(); });
+
+    return { activeTab, isConnected, config, editableConfig, health, providers, recentRuns, trend, page, enabledCount, avgLatency, overallSuccessRate, providerText, providerClass, filters, filteredRuns, selectedRun, selectRun, consensusSummary, divergenceSummary, fetchData, saveConfig, resetConfig, toggleSlot, saveState, diffItems, isDirty, validationErrors, canSave, draftEnabledCount, modeLabel };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
