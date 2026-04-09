@@ -1,6 +1,6 @@
 name: astrbot_plugin_multi_model_compute
 display_name: 多模型深度思考与辩论
 desc: 面向 AstrBot 的多模型协同分析插件，支持 /深度思考 与 /辩论，提供多模型并行调用、动态路由、结构化汇总、共识与分歧分析、可视化报告及调试能力。
-version: v0.13.1
+version: v0.1.0
 author: zhumengling
 repo: https://github.com/zhumengling/astrbot_plugin_multi_model_compute
