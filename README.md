@@ -1,23 +1,11 @@
 # astrbot_plugin_multi_model_compute
 
-AstrBot 多模型**计算与协调机制**（Tool-First）`v1.0.0` 最终版。
+AstrBot 多模型**计算与协调机制**（Tool-First）
 
 > **核心定位**：
 > - 负责复杂多模型调用、辩论演化、结构化汇总和动态调度。
 > - 主打面向用户的直接体验：可通过 `/深度思考` 得到高质量的图文分析报告。
 > - 在 Tool 模式下作为默认模型的专属外脑。
-
----
-
-## 🌟 版本更新 (v1.0.0)
-
-本阶段达成了高级功能的落地，项目成熟：
-
-1. ⚔️ **Debate Protocol (多轮辩论)**: 新增 `/辩论 <问题>` 命令。引擎会让选定的模型独立作答 -> 互相进行交叉驳复 -> 回归提炼出高置信度的最终共识，并进行模型间的收敛趋势分析（Converging / Diverging），自动生成可视化战报图。
-2. 🔀 **动态模型智能路由**: 原先模型调度仅基于 tag 标签进行任务语义匹配。现在叠加 **Provider Health** 实时计算历史表现分（包含调用成功率、响应平滑度、连败扣分、老手加分），优胜劣汰调度最稳健的 Provider。
-3. 💰 **成本调度配置**: 引入 `monthly_budget_usd` 阀值规划配置防刷。
-
-*请参阅 [版本演进概览](#版本演进概览) 获得先前的更新列表。*
 
 ---
 
@@ -93,29 +81,3 @@ astrbot_plugin_multi_model_compute/
 ├── debate.py        — Debate Protocol 轮次推演机制与报告 Render
 └── __init__.py      — 初始化注册
 ```
-
-## 版本演进概览
-
-- **v1.0.0**: [The Advanced Matrix] 多轮辩论协议、动态健康路由算法、预算。
-- **v0.13.0**: [The Experience] /深度思考、HTML Playwright 可视化、流程跟踪。
-- **v0.12.0**: [The Brain] Tag 标签推断选型、Redis/内存混合式全生命周期缓存。
-- **v0.11.0**: [The Base] 拆分解耦重构出 10大模块、字面脱毒为语义结构归纳。
-
-
----
-
-## 安全与行为变更（最近修复）
-
-- `backend=mock` 路径修复了未定义变量导致的运行时异常。
-- 缓存键升级为 `query + mode + backend + extra_sig`，其中 `extra_sig` 包含：
-  - `max_models`
-  - 当前已选槽位模型与 tags
-  - 运行时模型 ID 集合
-  以避免模型配置变化后误命中旧缓存。
-- Debate 阶段超时后会**显式取消未完成任务**并进行有界回收，避免超时后继续拖挂。
-- timeout 修改权限默认更严格：
-  - `mmtimeout` 与 `manage_timeout(set)` 仅允许明确管理员上下文。
-  - 如宿主上下文无法识别管理员，可在配置 `timeout_manage_admin_ids` 中显式配置允许的用户ID。
-- 新增配置：
-  - `auto_raise_tool_call_timeout_on_startup`（bool，默认 `false`）
-  - `timeout_manage_admin_ids`（list[string]，默认空）
